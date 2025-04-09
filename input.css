@@ -1,4 +1,9 @@
 @import "tailwindcss";
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
+
+@theme {
+  /* Define your custom breakpoints */
+  --breakpoint-se: 23.4375rem; /* 375px */
+  --breakpoint-ipad: 48rem;     /* 768px */
+  --breakpoint-desktop: 64rem;  /* 1024px */
+  
+}

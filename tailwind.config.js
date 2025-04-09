@@ -3,12 +3,12 @@ module.exports = {
   content: [
     "./index.html",
     "./script.js",
-    "./**/*.{html,js}" // Note the comma between extensions
+    "./**/*.{html,js}"
   ],
   theme: {
-    extend: {},
-    'se': '375px',      // iPhone SE
-      'ipad': '768px', // iPad Mini
+    extend: {
+      // No screens configuration needed here in v4.1
+    }
   },
   plugins: [],
-}
+};
