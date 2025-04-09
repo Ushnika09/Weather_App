@@ -3,47 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather forecast application</title>
-    <link rel="shortcut icon" href="   https://cdn-icons-png.flaticon.com/512/7059/7059294.png " type="image/x-icon">
-
+    <title>Weather Forecast Application</title>
+    <link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/512/7059/7059294.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-    <link rel="stylesheet" href="output.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                screens: {
+                    'se': '375px',      // 23.4375rem
+                    'ipad': '768px',    // 48rem
+                    'desktop': '1024px' // 64rem
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes slideDown {
+            from { transform: translateY(0); }
+            to { transform: translateY(10px); }
+        }
+        .buttons-slide-down {
+            animation: slideDown 0.3s ease forwards;
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 flex flex-col">
-  
-    <header>
-        <h1 class="head  bg-linear-to-r from-cyan-500 to-blue-500 text-xs se:text-[18px] ipad:text-3xl desktop:text-4xl font-bold p-4 text-center rounded-lg m-2">Weather Forecast Dashboard</h1>
-    <main>
-        <section class="hero">
-            <div class="main flex flex-col ipad:flex-row gap-2 m-2 min-h-60">
-
-                <div class="search bg-green-100 shadow-xl rounded-xl p-6 ipad:basis-1/2 ipad:bg-violet-300 se:bg-cyan-00 flex flex-col m-2">
-
-                    <label for="search" class="font-bold text-xl se:text-[18px] ipad:text-3xl desktop:text-4xl text-center">Enter location</label>
-                    <input class=" border-2 rounded-lg h-8 m-4  se:h-12 placeholder:text-center text-center" type="text" name="search" id="search" placeholder="Search Location . . . . . . . . . . . . . ">
-                    <button id="submit" class="  bg-blue-600 p-2 m-3 border-0 rounded-lg   text-xl font-bold cursor-pointer text-white se:p-3 ">Search</button>
-                    <button id="btn" class=" bg-amber-600  m-3 border-0 rounded-lg p-2 ipad:p-4 text-xl font-bold cursor-pointer text-white">Search Current Location</button>
-
+<body class="min-h-screen bg-gradient-to-br from-purple-200 via-blue- ipad:p-3 flex flex-col">
+    <header class="p-2 se:p-3 ipad:p-4">
+        <h1 class="bg-gradient-to-r from-purple-600 via-blue-500 to-teal-500 text-white text-lg se:text-xl ipad:text-2xl desktop:text-4xl font-bold p-3 se:p-4 text-center rounded-lg m-1 se:m-2 shadow-lg">Weather Forecast Dashboard</h1>
+    </header>
+    
+    <main class="flex-1">
+        <section class="hero p-1 se:p-2 ipad:p-3">
+            <div class="flex flex-col desktop:flex-row gap-3 se:gap-4 m-1 se:m-2 min-h-60">
+                <!-- Search Section -->
+                <div class="bg-white bg-opacity-80 backdrop-blur-md rounded-xl shadow-xl p-4 se:p-5 ipad:p-6 flex flex-col desktop:basis-1/2">
+                    <label for="search" class="font-bold text-lg se:text-xl ipad:text-2xl text-center text-indigo-700 mb-3 se:mb-4">Enter location</label>
+                    
+                    <div class="relative search-container z-10">
+                        <input 
+                            id="search" 
+                            type="text" 
+                            placeholder="Search Location..." 
+                            class="w-full border-2 border-purple-300 rounded-lg h-10 se:h-12 px-3 se:px-4 placeholder:text-center text-center focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all bg-gradient-to-r from-purple-50 to-blue-50"
+                            autocomplete="off"
+                        >
+                        <div id="recentSearches" class="absolute top-[calc(100%+0.5rem)] left-0 right-0 bg-white rounded-lg shadow-lg mt-1 hidden max-h-60 overflow-y-auto border border-purple-200 z-20">
+                            <!-- Recent searches will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div id="buttonContainer" class="flex flex-col se:flex-row gap-2 se:gap-3 mt-4 se:mt-6 transition-all duration-300 relative z-0">
+                        <button id="submit" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 se:py-3 px-3 se:px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50">
+                            <i class="fas fa-search mr-1 se:mr-2"></i> Search
+                        </button>
+                        <button id="btn" class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-2 se:py-3 px-3 se:px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50">
+                            <i class="fas fa-location-arrow mr-1 se:mr-2"></i> Current Location
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Weather Display Section -->
+                <div id="content" class="bg-white bg-opacity-80 backdrop-blur-md shadow-xl rounded-xl p-4 se:p-5 ipad:p-6 flex items-center justify-center desktop:basis-1/2">
+                    <div class="text-center text-gray-600">
+                        <i class="fas fa-cloud-sun text-4xl se:text-5xl mb-3 se:mb-4 text-teal-400"></i>
+                        <p class="text-sm se:text-base">Search for a location to see weather information</p>
+                    </div>
+                </div>
             </div>
-            <div id="content" class="  ipad:bg-cyan-100 shadow-xl rounded-xl p-6 se:bg-purple-200 bg-pink-100 basis-1/2 flex">
-
-            </div>
-        </div>
         </section>
+        
+        <!-- Forecast Section -->
         <section>
-            <div id="forecast" class=" se:bg-amber-50 shadow-xl rounded-xl p-2  m-3 text-center text-2xl  font-bold  bg-lime-100 ipad:bg-emerald-200">
-                7 day Forecast
+            <div id="forecast" class="bg-white bg-opacity-80 backdrop-blur-md shadow-xl rounded-xl p-3 se:p-4 m-2 se:m-3 text-center text-xl se:text-2xl font-bold text-indigo-700 hidden">
+                <h2 class="mb-3 se:mb-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-transparent bg-clip-text">7-Day Forecast</h2>
+                <div id="forecastDays" class="grid grid-cols-1 se:grid-cols-2 ipad:grid-cols-3 desktop:grid-cols-7 gap-2 se:gap-3 justify-items-center">
+                    <!-- Forecast days will be populated here -->
+                </div>
             </div>
         </section>
     </main>
 
-    <footer>
-        <div class="footer bg-pink-300 text-center p-3 text-sm font-medium m-3 rounded-lg shadow-xl">
-            <p>&copy; 2025 Weather Forecast Application. All rights reserved.</p>
-        </div>
+    <footer class="bg-gradient-to-r from-pink-400 to-purple-400 bg-opacity-80 backdrop-blur-md text-center p-2 se:p-3 text-sm font-medium m-2 se:m-3 rounded-lg shadow-xl text-white">
+        <p>© 2025 Weather Forecast Application. All rights reserved.</p>
     </footer>
     
+
     <script src="script.js"></script>
 </body>
 </html>

@@ -7,3 +7,13 @@
   --breakpoint-desktop: 64rem;  /* 1024px */
   
 }
+
+/* Custom animations */
+@keyframes slideDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(10px); }
+}
+
+.buttons-slide-down {
+  animation: slideDown 0.3s ease forwards;
+}
