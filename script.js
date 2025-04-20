@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM Loaded....");
     
@@ -13,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const buttonContainer = document.getElementById("buttonContainer");
 
     forecast.style.display = "none";
+    recentSearches.classList.add("hidden");
 
     submitBtn.addEventListener("click", handleSearch);
     searchBar.addEventListener("keypress", (e) => {
@@ -20,9 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     searchBar.addEventListener("focus", () => {
-        renderRecentSearches();
-        recentSearches.classList.remove("hidden");
-        buttonContainer.classList.add("buttons-slide-down");
+        const recent = JSON.parse(sessionStorage.getItem('recentCities')) || [];
+        if (recent.length > 0) {
+            renderRecentSearches();
+            recentSearches.classList.remove("hidden");
+            buttonContainer.classList.add("buttons-slide-down");
+        }
     });
 
     document.addEventListener("click", (e) => {
@@ -45,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function showAlert(message) {
         const alertDiv = document.createElement("div");
-        alertDiv.className = "fixed top-2 se:top-4 right-2 se:right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 se:px-4 py-2 rounded-lg shadow-lg animate-fade-in";
+        alertDiv.className = "fixed top-2 se:top-4 right-2 se:right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 se:px-4 py-2 rounded-lg shadow-lg animate-fade-in transform transition-all hover:scale-105";
         alertDiv.textContent = message;
         document.body.appendChild(alertDiv);
         setTimeout(() => {
@@ -99,9 +102,9 @@ document.addEventListener("DOMContentLoaded", () => {
         
         contentBox.innerHTML = `
             <div class="w-full h-full flex flex-col items-center justify-center p-3 se:p-4">
-                <div class="bg-white bg-opacity-90 rounded-xl shadow-lg p-4 se:p-6 w-full max-w-md transition-all duration-300 hover:shadow-xl">
+                <div class="bg-white bg-opacity-90 rounded-xl shadow-lg p-4 se:p-6 w-full max-w-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                     <div class="flex flex-col items-center mb-4 se:mb-6">
-                        <h1 class="text-2xl se:text-3xl font-bold text-indigo-800 mb-2">${name}</h1>
+                        <h1 class="text-2xl se:text-3xl font-bold text-indigo-800 mb-2 transition-colors hover:text-indigo-600">${name}</h1>
                         <div class="flex items-center justify-center gap-2">
                             ${weatherIcon}
                             <span class="text-xl se:text-2xl font-semibold text-teal-600">${weather[0].main}</span>
@@ -153,15 +156,18 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         
+        // Get 6 unique days instead of 5
         const dailyForecasts = {};
+        let daysCount = 0;
         data.list.forEach(item => {
             const date = new Date(item.dt * 1000).toLocaleDateString();
-            if (!dailyForecasts[date] || item.dt_txt.includes("12:00:00")) {
+            if (!dailyForecasts[date] && daysCount < 6) {  // Changed from < 6 to < 7 since we want 6 days
                 dailyForecasts[date] = item;
+                daysCount++;
             }
         });
         
-        const forecastItems = Object.values(dailyForecasts).slice(0, 7);
+        const forecastItems = Object.values(dailyForecasts);
         
         forecastDays.innerHTML = forecastItems.map(item => {
             const date = new Date(item.dt * 1000);
@@ -170,12 +176,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const weatherIcon = getWeatherIcon(item.weather[0].main, item.weather[0].description, false);
             
             return `
-                <div class="bg-gradient-to-br from-white to-blue-50 rounded-lg p-2 se:p-3 flex flex-col items-center justify-center transition-all duration-300 hover:bg-opacity-90 hover:shadow-md hover:scale-105 w-full max-w-[150px]">
-                    <div class="font-semibold text-indigo-700 text-sm se:text-base">${dayName}</div>
-                    <div class="text-xs se:text-sm text-gray-600 mb-1 se:mb-2">${dateStr}</div>
-                    <div class="my-1 se:my-2">${weatherIcon}</div>
+                <div class="rounded-lg p-2 se:p-3 flex flex-col items-center justify-center transition-all duration-300 hover:shadow-md hover:scale-105 w-full max-w-[150px]
+                    se:bg-gradient-to-br se:from-blue-50 se:to-purple-50 
+                    ipad:bg-gradient-to-br ipad:from-teal-50 ipad:to-indigo-50 
+                    desktop:bg-gradient-to-br desktop:from-amber-50 desktop:to-violet-50">
+                    <div class="font-semibold text-indigo-700 text-sm se:text-base transition-colors hover:text-indigo-500">${dayName}</div>
+                    <div class="text-xs se:text-sm text-gray-600 mb-1">${dateStr}</div>
+                    <div class="my-1 transform hover:rotate-12 transition-transform">${weatherIcon}</div>
                     <div class="text-lg se:text-xl font-bold text-purple-600">${Math.round(item.main.temp)}°C</div>
-                    <div class="text-xs se:text-sm text-teal-600">${item.weather[0].main}</div>
+                    <div class="text-xs se:text-sm text-teal-600 mb-1">${item.weather[0].description}</div>
+                    <div class="text-xs text-gray-600 flex flex-col items-center gap-1">
+                        <span><i class="fas fa-temperature-low text-blue-400 mr-1"></i>Feels: ${Math.round(item.main.feels_like)}°C</span>
+                        <span><i class="fas fa-tint text-teal-400 mr-1"></i>${item.main.humidity}%</span>
+                        <span><i class="fas fa-wind text-blue-500 mr-1"></i>${item.wind.speed} m/s</span>
+                    </div>
                 </div>
             `;
         }).join("");
@@ -210,5 +224,63 @@ document.addEventListener("DOMContentLoaded", () => {
         return icons[main] || `<i class="fas fa-question-circle text-gray-500 ${sizeClass}"></i>`;
     }
 
-    
+    currLocation.addEventListener("click", () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const { latitude, longitude } = position.coords;
+                    getWeatherByCoords(latitude, longitude);
+                },
+                error => {
+                    console.error(error);
+                    showAlert("Couldn't get your location. Did you deny permission?");
+                }
+            );
+        } else {
+            showAlert("Your browser doesn't support geolocation");
+        }
+    });
+
+    function getWeatherByCoords(lat, lon) {
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.name) {
+                    searchBar.value = data.name;
+                    getWeatherData(data.name);
+                } else {
+                    throw new Error("Location not found");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                showAlert("Couldn't get weather for your location");
+            });
+    }
+
+    function saveToRecentSearches(city) {
+        let recent = JSON.parse(sessionStorage.getItem('recentCities')) || [];
+        recent = recent.filter(item => item.toLowerCase() !== city.toLowerCase());
+        recent.unshift(city);
+        if (recent.length > 5) recent = recent.slice(0, 5);
+        sessionStorage.setItem('recentCities', JSON.stringify(recent));
+        renderRecentSearches();
+    }
+
+    function renderRecentSearches() {
+        const recent = JSON.parse(sessionStorage.getItem('recentCities')) || [];
+        recentSearches.innerHTML = recent.map(city => `
+            <div class="recent-item p-2 se:p-3 hover:bg-purple-100 cursor-pointer transition-colors text-indigo-700 text-sm se:text-base transform hover:translate-x-2" onclick="document.getElementById('search').value = '${city}'; document.getElementById('recentSearches').classList.add('hidden'); handleSearch()">
+                <i class="fas fa-clock mr-1 se:mr-2 text-purple-400"></i> ${city}
+            </div>
+        `).join("");
+        if (recent.length === 0) {
+            recentSearches.innerHTML = `
+                <div class="p-2 se:p-3 text-gray-600 text-sm se:text-base">
+                    No recent searches
+                </div>
+            `;
+        }
+    }
 });

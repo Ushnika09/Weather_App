@@ -26,9 +26,19 @@
         .buttons-slide-down {
             animation: slideDown 0.3s ease forwards;
         }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        .animate-fade-out {
+            animation: fadeIn 0.3s ease-out reverse;
+        }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-purple-200 via-blue- ipad:p-3 flex flex-col">
+<body class="min-h-screen bg-gradient-to-br from-purple-200 via-blue-300 to-teal-200 ipad:p-3 flex flex-col">
     <header class="p-2 se:p-3 ipad:p-4">
         <h1 class="bg-gradient-to-r from-purple-600 via-blue-500 to-teal-500 text-white text-lg se:text-xl ipad:text-2xl desktop:text-4xl font-bold p-3 se:p-4 text-center rounded-lg m-1 se:m-2 shadow-lg">Weather Forecast Dashboard</h1>
     </header>
@@ -76,8 +86,8 @@
         <!-- Forecast Section -->
         <section>
             <div id="forecast" class="bg-white bg-opacity-80 backdrop-blur-md shadow-xl rounded-xl p-3 se:p-4 m-2 se:m-3 text-center text-xl se:text-2xl font-bold text-indigo-700 hidden">
-                <h2 class="mb-3 se:mb-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-transparent bg-clip-text">7-Day Forecast</h2>
-                <div id="forecastDays" class="grid grid-cols-1 se:grid-cols-2 ipad:grid-cols-3 desktop:grid-cols-7 gap-2 se:gap-3 justify-items-center">
+                <h2 class="mb-3 se:mb-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-transparent bg-clip-text">6-Day Forecast</h2>
+                <div id="forecastDays" class="grid grid-cols-1 se:grid-cols-2 ipad:grid-cols-3 desktop:grid-cols-6 gap-2 se:gap-3 justify-items-center">
                     <!-- Forecast days will be populated here -->
                 </div>
             </div>
