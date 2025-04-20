@@ -1,7 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM Loaded....");
     
+    // API key for OpenWeatherMap
     const apiKey = "6355bd5aa05ce5fe54fc409f52012414";
+    
+    // DOM elements
     const searchBar = document.getElementById("search");
     const currLocation = document.getElementById("btn");
     const submitBtn = document.getElementById("submit");
@@ -11,14 +14,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const recentSearches = document.getElementById("recentSearches");
     const buttonContainer = document.getElementById("buttonContainer");
 
+    // Initialize UI: hide forecast and recent searches dropdown
     forecast.style.display = "none";
     recentSearches.classList.add("hidden");
 
+    // Event listener for search button click
     submitBtn.addEventListener("click", handleSearch);
+    
+    // Event listener for Enter key in search bar
     searchBar.addEventListener("keypress", (e) => {
         if (e.key === "Enter") handleSearch();
     });
 
+    // Event listener to show recent searches dropdown on search bar focus
     searchBar.addEventListener("focus", () => {
         const recent = JSON.parse(sessionStorage.getItem('recentCities')) || [];
         if (recent.length > 0) {
@@ -28,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Event listener to hide dropdown when clicking outside
     document.addEventListener("click", (e) => {
         if (!searchBar.contains(e.target) && !recentSearches.contains(e.target)) {
             recentSearches.classList.add("hidden");
@@ -35,6 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    /**
+     * Handles search action: validates input and fetches weather data
+     */
     function handleSearch() {
         const location = searchBar.value.trim();
         if (location && isNaN(location) && !location.includes("http")) {
@@ -46,6 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /**
+     * Displays a temporary alert message to the user
+     * @param {string} message - The message to display
+     */
     function showAlert(message) {
         const alertDiv = document.createElement("div");
         alertDiv.className = "fixed top-2 se:top-4 right-2 se:right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 se:px-4 py-2 rounded-lg shadow-lg animate-fade-in transform transition-all hover:scale-105";
@@ -57,16 +73,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 3000);
     }
 
+    /**
+     * Fetches weather and forecast data for a given location
+     * @param {string} location - The city name to fetch data for
+     */
     function getWeatherData(location) {
         const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}&units=metric`;
         const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${apiKey}&units=metric`;
         
+        // Show loading spinner
         contentBox.innerHTML = `
             <div class="w-full h-full flex items-center justify-center">
                 <div class="animate-spin rounded-full h-10 se:h-12 w-10 se:w-12 border-t-2 border-b-2 border-purple-500"></div>
             </div>
         `;
         
+        // Fetch weather and forecast data concurrently
         Promise.all([
             fetch(weatherUrl).then(res => res.json()),
             fetch(forecastUrl).then(res => res.json())
@@ -88,6 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
     
+    /**
+     * Displays current weather data in the UI
+     * @param {Object} data - Weather data from API
+     */
     function displayWeather(data) {
         if (data.cod !== 200) {
             showAlert(data.message || "Error fetching weather data");
@@ -150,18 +176,22 @@ document.addEventListener("DOMContentLoaded", () => {
         forecast.style.display = "block";
     }
     
+    /**
+     * Displays 6-day forecast data in the UI
+     * @param {Object} data - Forecast data from API
+     */
     function displayForecast(data) {
         if (data.cod !== "200") {
             console.error("Forecast error:", data.message);
             return;
         }
         
-        // Get 6 unique days instead of 5
+        // Collect 6 unique days for forecast
         const dailyForecasts = {};
         let daysCount = 0;
         data.list.forEach(item => {
             const date = new Date(item.dt * 1000).toLocaleDateString();
-            if (!dailyForecasts[date] && daysCount < 6) {  // Changed from < 6 to < 7 since we want 6 days
+            if (!dailyForecasts[date] && daysCount < 6) {
                 dailyForecasts[date] = item;
                 daysCount++;
             }
@@ -195,6 +225,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }).join("");
     }
     
+    /**
+     * Returns an appropriate weather icon based on conditions
+     * @param {string} main - Main weather condition
+     * @param {string} description - Detailed weather description
+     * @param {boolean} isLarge - Whether to use large icon size
+     * @returns {string} HTML for the weather icon
+     */
     function getWeatherIcon(main, description, isLarge = true) {
         const isDay = new Date().getHours() > 6 && new Date().getHours() < 18;
         const sizeClass = isLarge ? "text-3xl se:text-4xl" : "text-xl se:text-2xl";
@@ -224,6 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return icons[main] || `<i class="fas fa-question-circle text-gray-500 ${sizeClass}"></i>`;
     }
 
+    // Event listener for current location button
     currLocation.addEventListener("click", () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -241,24 +279,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    /**
+     * Fetches weather data by coordinates
+     * @param {number} lat - Latitude
+     * @param {number} lon - Longitude
+     */
     function getWeatherByCoords(lat, lon) {
         const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+        contentBox.innerHTML = `
+            <div class="w-full h-full flex items-center justify-center">
+                <div class="animate-spin rounded-full h-10 se:h-12 w-10 se:w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+        `;
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                if (data.name) {
+                if (data.cod === 200 && data.name) {
                     searchBar.value = data.name;
                     getWeatherData(data.name);
                 } else {
-                    throw new Error("Location not found");
+                    throw new Error(data.message || "Location not found");
                 }
             })
+            Loo
             .catch(error => {
                 console.error(error);
                 showAlert("Couldn't get weather for your location");
+                contentBox.innerHTML = `
+                    <div class="text-center text-gray-600">
+                        <i class="fas fa-exclamation-triangle text-4xl se:text-5xl mb-3 se:mb-4 text-red-400"></i>
+                        <p class="text-sm se:text-base">Couldn't fetch weather data</p>
+                    </div>
+                `;
             });
     }
 
+    /**
+     * Saves a city to recent searches in sessionStorage
+     * @param {string} city - City name to save
+     */
     function saveToRecentSearches(city) {
         let recent = JSON.parse(sessionStorage.getItem('recentCities')) || [];
         recent = recent.filter(item => item.toLowerCase() !== city.toLowerCase());
@@ -268,6 +327,9 @@ document.addEventListener("DOMContentLoaded", () => {
         renderRecentSearches();
     }
 
+    /**
+     * Renders the recent searches dropdown
+     */
     function renderRecentSearches() {
         const recent = JSON.parse(sessionStorage.getItem('recentCities')) || [];
         recentSearches.innerHTML = recent.map(city => `
